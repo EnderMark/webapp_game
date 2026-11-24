@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carta, Forbici, Sasso — Sfida la CPU</title>
+  <meta name="description" content="Gioca subito a Carta, Forbici, Sasso online: scegli la tua mossa, sfida la CPU in partita libera o al meglio di 5 e condividi la sfida con gli amici.">
+  <meta property="og:title" content="Carta, Forbici, Sasso — Sfida la CPU">
+  <meta property="og:description" content="Un classico gioco di Carta, Forbici, Sasso veloce e curato, giocabile subito dal browser.">
+  <meta property="og:type" content="website">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23d94e34'/%3E%3Cpath d='M22 20l20 24M42 20L22 44' stroke='%23fdfbf7' stroke-width='5' stroke-linecap='round'/%3E%3Ccircle cx='21' cy='45' r='5' fill='none' stroke='%23fdfbf7' stroke-width='4'/%3E%3Ccircle cx='43' cy='45' r='5' fill='none' stroke='%23fdfbf7' stroke-width='4'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;1,9..144,700&family=JetBrains+Mono:wght@600;700&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="brand">
+        <h1 class="brand-title">Carta, Forbici, Sasso</h1>
+        <p class="brand-subtitle">Scegli la tua mossa e batti la CPU</p>
+      </div>
+      <div class="header-actions">
+        <button
+          type="button"
+          id="btn-sound"
+          class="icon-btn"
+          aria-pressed="true"
+          aria-label="Attiva o disattiva gli effetti sonori"
+          title="Audio"
+        >
+          <svg class="icon-sound-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+          </svg>
+          <svg class="icon-sound-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <line x1="23" y1="9" x2="17" y2="15"></line>
+            <line x1="17" y1="9" x2="23" y2="15"></line>
+          </svg>
+          <span>Audio</span>
+        </button>
+        <button
+          type="button"
+          id="btn-share"
+          class="icon-btn"
+          aria-label="Condividi il link del gioco"
+          title="Condividi"
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="18" cy="5" r="3"></circle>
+            <circle cx="6" cy="12" r="3"></circle>
+            <circle cx="18" cy="19" r="3"></circle>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+          </svg>
+          <span>Condividi</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="top-bar">
+      <div class="mode-switch" role="group" aria-label="Modalità di gioco">
+        <button type="button" id="mode-free" class="mode-btn" data-mode="free" aria-pressed="true">
+          Partita libera
+        </button>
+        <button type="button" id="mode-bo5" class="mode-btn" data-mode="bo5" aria-pressed="false">
+          Al meglio di 5
+        </button>
+      </div>
+      <div class="streak-badge" aria-live="polite">
+        Serie: <strong id="streak-value">0</strong>
+      </div>
+    </div>
+
+    <main>
+      <section class="scoreboard" aria-label="Punteggio">
+        <div class="score-side score-side--player">
+          <span class="score-label">Tu</span>
+          <span id="score-player" class="score-value">0</span>
+        </div>
+        <div class="score-divider">
+          <span id="round-counter" class="round-pill">Round 0</span>
+          <span id="draws-counter" class="score-draws">Pareggi: 0</span>
+        </div>
+        <div class="score-side score-side--cpu">
+          <span class="score-label">CPU</span>
+          <span id="score-cpu" class="score-value">0</span>
+        </div>
+      </section>
+
+      <section class="arena" aria-label="Campo di sfida" style="margin-top: 16px;">
+        <div class="arena-duel">
+          <div class="fighter">
+            <span class="fighter-tag">La tua mossa</span>
+            <div id="stage-player" class="fighter-stage is-placeholder" aria-hidden="true"></div>
+            <span id="label-player" class="fighter-choice-name">—</span>
+          </div>
+
+          <span class="vs-mark" aria-hidden="true">vs</span>
+
+          <div class="fighter">
+            <span class="fighter-tag">Mossa CPU</span>
+            <div id="stage-cpu" class="fighter-stage is-placeholder" aria-hidden="true"></div>
+            <span id="label-cpu" class="fighter-choice-name">—</span>
+          </div>
+        </div>
+
+        <div id="outcome-box" class="outcome-box" data-state="idle" aria-live="polite" aria-atomic="true">
+          <p id="outcome-title" class="outcome-title">Pronto a giocare?</p>
+          <p id="outcome-detail" class="outcome-detail">Scegli Sasso, Carta o Forbici qui sotto.</p>
+        </div>
+
+        <div id="match-banner" class="match-banner" hidden>
+          <span id="match-banner-text" class="match-banner-text"></span>
+          <button type="button" id="btn-rematch" class="primary-btn">Gioca ancora</button>
+        </div>
+      </section>
+
+      <section class="controls-section" aria-label="Scegli la tua mossa" style="margin-top: 18px;">
+        <p class="controls-label">Scegli la tua mossa</p>
+        <div class="choices-grid">
+          <button type="button" id="choice-sasso" class="choice-btn" data-choice="sasso" aria-label="Scegli Sasso">
+            <svg class="choice-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M18 32V23a4 4 0 0 1 8 0v6"></path>
+              <path d="M26 27v-6a4 4 0 0 1 8 0v7"></path>
+              <path d="M34 27v-5a4 4 0 0 1 8 0v8"></path>
+              <path d="M42 29v-3a4 4 0 0 1 8 0v12c0 10-7 17-17 17H28c-9 0-14-6-14-14v-7a4 4 0 0 1 8 0v3"></path>
+              <path d="M22 36c4-2 9-2 13 0"></path>
+            </svg>
+            <span class="choice-name">Sasso</span>
+            <span class="choice-key" aria-hidden="true">1 · S</span>
+          </button>
+
+          <button type="button" id="choice-carta" class="choice-btn" data-choice="carta" aria-label="Scegli Carta">
+            <svg class="choice-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M20 34V16a3.5 3.5 0 0 1 7 0v14"></path>
+              <path d="M27 30V12a3.5 3.5 0 0 1 7 0v18"></path>
+              <path d="M34 30V14a3.5 3.5 0 0 1 7 0v17"></path>
+              <path d="M41 31V20a3.5 3.5 0 0 1 7 0v19c0 10-6.5 16-16 16h-3c-8 0-14-5.5-15-13l-2-10a3.5 3.5 0 0 1 6.8-1.5L20 34"></path>
+            </svg>
+            <span class="choice-name">Carta</span>
+            <span class="choice-key" aria-hidden="true">2 · C</span>
+          </button>
+
+          <button type="button" id="choice-forbici" class="choice-btn" data-choice="forbici" aria-label="Scegli Forbici">
+            <svg class="choice-icon" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M25 32L18 13a3.5 3.5 0 0 1 6.6-2.4L31 28"></path>
+              <path d="M33 28L40 11a3.5 3.5 0 0 1 6.6 2.4L39 32"></path>
+              <path d="M39 32a4 4 0 0 1 7.5 2v6c0 9-6 15-15.5 15h-3C19 55 14 49 14 41v-4a4 4 0 0 1 8 0v2"></path>
+              <path d="M22 39a4 4 0 0 1 8 0"></path>
+              <path d="M30 37a4 4 0 0 1 8 0"></path>
+            </svg>
+            <span class="choice-name">Forbici</span>
+            <span class="choice-key" aria-hidden="true">3 · F</span>
+          </button>
+        </div>
+      </section>
+
+      <div class="bottom-bar" style="margin-top: 16px;">
+        <div class="history-strip" aria-label="Ultimi round">
+          <span class="history-label">Ultimi round:</span>
+          <ul id="history-dots" class="history-dots"></ul>
+        </div>
+        <button type="button" id="btn-reset" class="reset-btn">Azzera punteggio</button>
+      </div>
+    </main>
+
+    <footer class="app-footer">
+      Tasti rapidi: <strong>1 / S</strong> Sasso · <strong>2 / C</strong> Carta · <strong>3 / F</strong> Forbici · <strong>R</strong> Nuova partita
+    </footer>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="game.js" defer></script>
+</body>
+</html>
